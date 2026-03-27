@@ -2,11 +2,26 @@ import requests
 import time
 import random
 import os
+from threading import Thread
+from http.server import HTTPServer, BaseHTTPRequestHandler
 
 TOKEN = os.environ.get("BOT_TOKEN")
 GROQ_KEY = os.environ.get("GROQ_KEY")
 API = f"https://api.telegram.org/bot{TOKEN}"
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
+
+# Здоровье-сервер для Render
+class Handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b'OK')
+
+def run_health_server():
+    server = HTTPServer(('0.0.0.0', 10000), Handler)
+    server.serve_forever()
+
+Thread(target=run_health_server, daemon=True).start()
 
 def kb():
     return {"keyboard": [["🤬 Хам","🤡 Гопник","🧠 Циник"],["😢 Депрессивный","📝 Поэт","📊 Статистика"],["💢 Оскорбить","🗑 Очистить","❓ Помощь"]],"resize_keyboard":True}
