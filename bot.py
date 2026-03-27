@@ -8,6 +8,7 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 TOKEN = os.environ.get("BOT_TOKEN")
 API = f"https://api.telegram.org/bot{TOKEN}"
 
+# Здоровье-сервер для Render
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
@@ -29,17 +30,20 @@ def send(cid, txt, k=None):
         if k:
             d["reply_markup"] = k
         requests.post(f"{API}/sendMessage", json=d)
-    except:
-        pass
+        print(f"✅ Отправлено: {txt[:50]}")
+    except Exception as e:
+        print(f"❌ Ошибка отправки: {e}")
 
 def get_updates(offset=None):
     p = {"timeout": 25}
     if offset:
         p["offset"] = offset
     try:
-        r = requests.get(f"{API}/getUpdates", params=p)
-        return r.json().get("result", [])
-    except:
+        r = requests.get(f"{API}/getUpdates", params=p, timeout=30)
+        data = r.json()
+        return data.get("result", [])
+    except Exception as e:
+        print(f"❌ Ошибка получения: {e}")
         return []
 
 def get_answer(t, m):
@@ -74,11 +78,17 @@ def ins():
 mode = {}
 stat = {}
 last = 0
-print("ХАМЛО ЗАПУЩЕН")
+
+print("=" * 40)
+print("🤬 ХАМЛО БОТ ЗАПУЩЕН")
+print("=" * 40)
 
 while True:
     try:
+        print(f"🔍 Проверка обновлений (last={last})...")
         updates = get_updates(last+1)
+        print(f"📨 Найдено обновлений: {len(updates)}")
+        
         for u in updates:
             last = u["update_id"]
             if "message" in u:
@@ -88,7 +98,8 @@ while True:
                 txt = m.get("text", "")
                 if not txt:
                     continue
-                print(f"Получено: {txt[:50]}")
+                print(f"📩 Получено: {txt[:50]}")
+                
                 if uid not in mode:
                     mode[uid] = "хам"
                 if uid not in stat:
@@ -111,19 +122,20 @@ while True:
                     mode[uid] = "поэт"
                     send(cid, "✅ ПОЭТ", kb())
                 elif txt in ["📊 Статистика","Статистика"]:
-                    send(cid, f"Сообщений: {stat[uid]}", kb())
+                    send(cid, f"📊 Сообщений: {stat[uid]}", kb())
                 elif txt in ["💢 Оскорбить","Оскорбить"]:
                     send(cid, ins(), kb())
                 elif txt in ["🗑 Очистить","Очистить"]:
                     send(cid, "🗑 Очищено", kb())
                 elif txt in ["❓ Помощь","Помощь"]:
-                    send(cid, "ХАМЛО\nРежимы: Хам, Гопник, Циник, Депрессивный, Поэт\n@avgustc", kb())
+                    send(cid, "🤬 ХАМЛО\nРежимы: Хам, Гопник, Циник, Депрессивный, Поэт\n@avgustc", kb())
                 elif txt == "/start":
-                    send(cid, "ХАМЛО готов! @avgustc", kb())
+                    send(cid, "🤬 ХАМЛО готов! @avgustc", kb())
                 else:
                     cur = mode.get(uid, "хам")
                     send(cid, get_answer(txt, cur), kb())
-        time.sleep(0.3)
+        
+        time.sleep(2)
     except Exception as e:
-        print(f"Ошибка: {e}")
+        print(f"❌ Ошибка в цикле: {e}")
         time.sleep(5)
