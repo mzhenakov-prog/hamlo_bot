@@ -8,7 +8,6 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 TOKEN = os.environ.get("BOT_TOKEN")
 API = f"https://api.telegram.org/bot{TOKEN}"
 
-# Здоровье-сервер для Render
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
@@ -33,10 +32,10 @@ def send(cid, txt, k=None):
     except:
         pass
 
-def up(off=None):
+def get_updates(offset=None):
     p = {"timeout": 25}
-    if off:
-        p["offset"] = off
+    if offset:
+        p["offset"] = offset
     try:
         r = requests.get(f"{API}/getUpdates", params=p)
         return r.json().get("result", [])
@@ -79,7 +78,7 @@ print("ХАМЛО ЗАПУЩЕН")
 
 while True:
     try:
-        updates = up(last+1)
+        updates = get_updates(last+1)
         for u in updates:
             last = u["update_id"]
             if "message" in u:
@@ -89,7 +88,7 @@ while True:
                 txt = m.get("text", "")
                 if not txt:
                     continue
-                print(txt[:50])
+                print(f"Получено: {txt[:50]}")
                 if uid not in mode:
                     mode[uid] = "хам"
                 if uid not in stat:
