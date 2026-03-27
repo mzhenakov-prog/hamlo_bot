@@ -6,9 +6,7 @@ from threading import Thread
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 TOKEN = os.environ.get("BOT_TOKEN")
-GROQ_KEY = os.environ.get("GROQ_KEY")
 API = f"https://api.telegram.org/bot{TOKEN}"
-GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 
 # Здоровье-сервер для Render
 class Handler(BaseHTTPRequestHandler):
@@ -45,18 +43,7 @@ def up(off=None):
     except:
         return []
 
-def ai(msg, mode):
-    h = {"Authorization": f"Bearer {GROQ_KEY}", "Content-Type": "application/json"}
-    d = {"model": "llama-3.1-8b-instant", "messages": [{"role": "system", "content": f"Ты ХАМЛО {mode}. Отвечай коротко, с матом."}, {"role": "user", "content": msg}], "temperature": 0.9, "max_tokens": 80}
-    try:
-        r = requests.post(GROQ_URL, json=d, headers=h, timeout=15)
-        if r.status_code == 200:
-            return r.json()["choices"][0]["message"]["content"].strip()
-        return None
-    except:
-        return None
-
-def fall(t, m):
+def get_answer(t, m):
     tl = t.lower()
     if m == "хам":
         if "привет" in tl:
@@ -88,7 +75,7 @@ def ins():
 mode = {}
 stat = {}
 last = 0
-print("ХАМЛО AI ЗАПУЩЕН")
+print("ХАМЛО ЗАПУЩЕН")
 
 while True:
     try:
@@ -131,13 +118,12 @@ while True:
                 elif txt in ["🗑 Очистить","Очистить"]:
                     send(cid, "🗑 Очищено", kb())
                 elif txt in ["❓ Помощь","Помощь"]:
-                    send(cid, "ХАМЛО AI\nРежимы: Хам, Гопник, Циник, Депрессивный, Поэт\n@avgustc", kb())
+                    send(cid, "ХАМЛО\nРежимы: Хам, Гопник, Циник, Депрессивный, Поэт\n@avgustc", kb())
                 elif txt == "/start":
-                    send(cid, "ХАМЛО AI готов! @avgustc", kb())
+                    send(cid, "ХАМЛО готов! @avgustc", kb())
                 else:
                     cur = mode.get(uid, "хам")
-                    a = ai(txt, cur)
-                    send(cid, a if a else fall(txt, cur), kb())
+                    send(cid, get_answer(txt, cur), kb())
         time.sleep(0.3)
     except Exception as e:
         print(f"Ошибка: {e}")
