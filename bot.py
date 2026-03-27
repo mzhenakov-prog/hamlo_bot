@@ -14,17 +14,21 @@ def kb():
 def send(cid, txt, k=None):
     try:
         d = {"chat_id": cid, "text": txt}
-        if k: d["reply_markup"] = k
+        if k:
+            d["reply_markup"] = k
         requests.post(f"{API}/sendMessage", json=d)
-    except: pass
+    except:
+        pass
 
 def up(off=None):
     p = {"timeout": 25}
-    if off: p["offset"] = off
+    if off:
+        p["offset"] = off
     try:
         r = requests.get(f"{API}/getUpdates", params=p)
         return r.json().get("result", [])
-    except: return []
+    except:
+        return []
 
 def ai(msg, mode):
     h = {"Authorization": f"Bearer {GROQ_KEY}", "Content-Type": "application/json"}
@@ -34,25 +38,32 @@ def ai(msg, mode):
         if r.status_code == 200:
             return r.json()["choices"][0]["message"]["content"].strip()
         return None
-    except: return None
+    except:
+        return None
 
 def fall(t, m):
     tl = t.lower()
     if m == "хам":
-        if "привет" in tl: return "О, ещё один идиот. Чего припёрся?"
-        if "как дела" in tl: return "Тебе-то какое дело, мудила?"
+        if "привет" in tl:
+            return "О, ещё один идиот. Чего припёрся?"
+        if "как дела" in tl:
+            return "Тебе-то какое дело, мудила?"
         return "Чё, язык проглотил?"
     if m == "гопник":
-        if "привет" in tl: return "Слышь, братан, чё надо?"
+        if "привет" in tl:
+            return "Слышь, братан, чё надо?"
         return "Чё сказал, петух?"
     if m == "циник":
-        if "привет" in tl: return "О, ещё один идиот."
+        if "привет" in tl:
+            return "О, ещё один идиот."
         return "Твоя тупость поражает."
     if m == "депрессивный":
-        if "привет" in tl: return "Привет... Всё равно все умрём."
+        if "привет" in tl:
+            return "Привет... Всё равно все умрём."
         return "Всё бессмысленно..."
     if m == "поэт":
-        if "привет" in tl: return "Пришёл, идиот, опять / Чего тебе от меня надо?"
+        if "привет" in tl:
+            return "Пришёл, идиот, опять / Чего тебе от меня надо?"
         return "Что сказать тебе, идиот? / Сам решай свои проблемы"
     return "Чё?"
 
@@ -74,22 +85,40 @@ while True:
                 cid = m["chat"]["id"]
                 uid = m["from"]["id"]
                 txt = m.get("text", "")
-                if not txt: continue
+                if not txt:
+                    continue
                 print(txt[:50])
-                if uid not in mode: mode[uid] = "хам"
-                if uid not in stat: stat[uid] = 0
+                if uid not in mode:
+                    mode[uid] = "хам"
+                if uid not in stat:
+                    stat[uid] = 0
                 stat[uid] += 1
                 
-                if txt in ["🤬 Хам","Хам"]: mode[uid] = "хам"; send(cid, "✅ ХАМ", kb())
-                elif txt in ["🤡 Гопник","Гопник"]: mode[uid] = "гопник"; send(cid, "✅ ГОПНИК", kb())
-                elif txt in ["🧠 Циник","Циник"]: mode[uid] = "циник"; send(cid, "✅ ЦИНИК", kb())
-                elif txt in ["😢 Депрессивный","Депрессивный"]: mode[uid] = "депрессивный"; send(cid, "✅ ДЕПРЕССИВНЫЙ", kb())
-                elif txt in ["📝 Поэт","Поэт"]: mode[uid] = "поэт"; send(cid, "✅ ПОЭТ", kb())
-                elif txt in ["📊 Статистика","Статистика"]: send(cid, f"Сообщений: {stat[uid]}", kb())
-                elif txt in ["💢 Оскорбить","Оскорбить"]: send(cid, ins(), kb())
-                elif txt in ["🗑 Очистить","Очистить"]: send(cid, "🗑 Очищено", kb())
-                elif txt in ["❓ Помощь","Помощь"]: send(cid, "ХАМЛО AI\nРежимы: Хам, Гопник, Циник, Депрессивный, Поэт\n@avgustc", kb())
-                elif txt == "/start": send(cid, "ХАМЛО AI готов! @avgustc", kb())
+                if txt in ["🤬 Хам","Хам"]:
+                    mode[uid] = "хам"
+                    send(cid, "✅ ХАМ", kb())
+                elif txt in ["🤡 Гопник","Гопник"]:
+                    mode[uid] = "гопник"
+                    send(cid, "✅ ГОПНИК", kb())
+                elif txt in ["🧠 Циник","Циник"]:
+                    mode[uid] = "циник"
+                    send(cid, "✅ ЦИНИК", kb())
+                elif txt in ["😢 Депрессивный","Депрессивный"]:
+                    mode[uid] = "депрессивный"
+                    send(cid, "✅ ДЕПРЕССИВНЫЙ", kb())
+                elif txt in ["📝 Поэт","Поэт"]:
+                    mode[uid] = "поэт"
+                    send(cid, "✅ ПОЭТ", kb())
+                elif txt in ["📊 Статистика","Статистика"]:
+                    send(cid, f"Сообщений: {stat[uid]}", kb())
+                elif txt in ["💢 Оскорбить","Оскорбить"]:
+                    send(cid, ins(), kb())
+                elif txt in ["🗑 Очистить","Очистить"]:
+                    send(cid, "🗑 Очищено", kb())
+                elif txt in ["❓ Помощь","Помощь"]:
+                    send(cid, "ХАМЛО AI\nРежимы: Хам, Гопник, Циник, Депрессивный, Поэт\n@avgustc", kb())
+                elif txt == "/start":
+                    send(cid, "ХАМЛО AI готов! @avgustc", kb())
                 else:
                     cur = mode.get(uid, "хам")
                     a = ai(txt, cur)
